@@ -6,31 +6,33 @@ import ProductDetailSkeleton from "../../components/Skeletons/ProductDetail";
 import { useFavorites } from "../../context/FavoritesContext";
 import { useMemo } from "react";
 import type { Book } from "../Books/components/BookCard";
-
-const fetchBook = async (id: string) => {
-  const response = await fetch(
-    `${import.meta.env.VITE_GOOGLE_BOOKS_API_URL}/${id}?key=${import.meta.env.VITE_GOOGLE_BOOKS_API_KEY}`,
-  );
-  const data = await response.json();
-  return data;
-};
+import DOMPurify from "dompurify";
+import { getBookById } from "../../api/books";
+import ErrorComponent from "../../components/Error/Error";
 
 const BookDetails = () => {
   const { id } = useParams();
   const { addFavorite, favorites, removeFavorite } = useFavorites();
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["book", id],
-    queryFn: () => fetchBook(id as string),
+    queryFn: () => getBookById("gallar" as string),
+    enabled: !!id,
+    retry: false,
   });
 
   const isFavorite = useMemo(
     () => favorites.some((f: Book) => f.id === id),
-    [favorites, id]
+    [favorites, id],
   );
 
   if (isLoading) {
     return <ProductDetailSkeleton />;
   }
+
+  if (isError) {
+    return <ErrorComponent error={error} refetch={refetch} />;
+  }
+
   const handleToggleFavorite = () => {
     if (isFavorite) {
       removeFavorite(id as string);
@@ -38,6 +40,12 @@ const BookDetails = () => {
       addFavorite(data as Book);
     }
   };
+
+  const safeHtml = DOMPurify.sanitize(data?.volumeInfo?.description || "", {
+    ALLOWED_TAGS: ["p", "br", "strong", "em", "ul", "li", "ol"],
+    ALLOWED_ATTR: ["href", "target", "rel"],
+  });
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-28 md:pt-32 lg:pt-[10rem] pb-10">
       <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-left md:items-start">
@@ -80,7 +88,7 @@ const BookDetails = () => {
         <p
           className="text-md text-gray-500 mt-2 p-2"
           dangerouslySetInnerHTML={{
-            __html: data?.volumeInfo.description || "",
+            __html: safeHtml,
           }}
         ></p>
       </div>

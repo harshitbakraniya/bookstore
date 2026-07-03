@@ -2,10 +2,19 @@ import useBooks from "../../../../hooks/useBooks";
 import { useEffect, useRef } from "react";
 import BookListSkeleton from "../../../../components/Skeletons/BookList";
 import BookCard from "../BookCard";
+import ErrorComponent from "../../../../components/Error/Error";
 
 const BookList = () => {
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useBooks();
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isError,
+    error,
+    refetch,
+  } = useBooks();
   const loader = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,6 +43,10 @@ const BookList = () => {
     return <BookListSkeleton count={8} />;
   }
 
+  if (isError) {
+    return <ErrorComponent error={error} refetch={refetch} />;
+  }
+
   if (!data?.length && !isLoading) {
     return <p className="text-center mt-10">No books found.</p>;
   }
@@ -45,9 +58,7 @@ const BookList = () => {
           <BookCard key={book.id} book={book} />
         ))}
       </div>
-      {isFetchingNextPage
-        ? <BookListSkeleton count={8} />
-        : null}
+      {isFetchingNextPage ? <BookListSkeleton count={8} /> : null}
 
       {hasNextPage && !isLoading && <div ref={loader} className="h-10"></div>}
     </>

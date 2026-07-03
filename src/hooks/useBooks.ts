@@ -1,34 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useSearchQuery } from "./useSearchQuery";
-
-const fetchBooks = async ({
-  title,
-  author,
-  genre,
-  startIndex,
-}: {
-  title: string;
-  author: string;
-  genre: string;
-  startIndex: number;
-}) => {
-  let query = "";
-  if (title) {
-    query += `+intitle:${title}`;
-  }
-  if (author) {
-    query += `+inauthor:${author}`;
-  }
-  if (genre) {
-    query += `+subject:${genre}`;
-  }
-  const response = await fetch(
-    `${import.meta.env.VITE_GOOGLE_BOOKS_API_URL}?q=${query}&key=${import.meta.env.VITE_GOOGLE_BOOKS_API_KEY}&startIndex=${startIndex}`,
-  );
-  const data = await response.json();
-  return data;
-};
+import { searchBooks } from "../api/books";
 
 const useBooks = () => {
   const { title, author, genre } = useSearchQuery();
@@ -39,11 +12,13 @@ const useBooks = () => {
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
+    isError,
     error,
+    refetch,
   } = useInfiniteQuery({
     queryKey: ["books", title, author, genre],
     queryFn: ({ pageParam = 0 }) =>
-      fetchBooks({ title, author, genre, startIndex: pageParam }),
+      searchBooks({ title, author, genre, startIndex: pageParam }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       const loaded = allPages.length * 10;
@@ -67,7 +42,9 @@ const useBooks = () => {
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
+    isError,
     error,
+    refetch,
   };
 };
 
