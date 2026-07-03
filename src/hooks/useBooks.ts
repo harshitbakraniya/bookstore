@@ -22,7 +22,7 @@ const useBooks = () => {
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       const loaded = allPages.length * 10;
-      if (lastPage.items?.length < 10 || loaded >= lastPage.totalItems) {
+      if ((lastPage.items?.length ?? 0) < 10 || loaded >= lastPage.totalItems) {
         return undefined;
       }
       return loaded;

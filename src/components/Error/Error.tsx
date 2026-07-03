@@ -4,7 +4,7 @@ const ErrorComponent = ({
   error,
   refetch,
 }: {
-  error: Error;
+  error: Error | null;
   refetch: () => void;
 }) => {
   return (
