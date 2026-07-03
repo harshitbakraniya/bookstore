@@ -15,7 +15,7 @@ const BookDetails = () => {
   const { addFavorite, favorites, removeFavorite } = useFavorites();
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["book", id],
-    queryFn: () => getBookById("gallar" as string),
+    queryFn: () => getBookById(id as string),
     enabled: !!id,
     retry: false,
   });
